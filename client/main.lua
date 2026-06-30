@@ -1,0 +1,85 @@
+local utils = require "shared.utils"
+
+---@type VehicleInfo
+local currentVehicleInfo = nil
+---@param vehicleInfo VehicleInfo
+---@param mods table
+local function sendToDiscord(vehicleInfo, mods)
+    if not vehicleInfo then return end
+    local player = exports.qbx_core:GetPlayerData()
+    local playerName = player.charinfo.firstname .. " " .. player.charinfo.lastname
+    local playerId = GetPlayerServerId(PlayerId())
+    local modList = ""
+    local index = 0
+    for modType, modData in pairs(mods) do
+        index = index + 1
+        local currentStatus = modData.current == 0 and "Stock" or ("Level %d"):format(modData.current)
+        local rangeStatus = ("(Stock - Level %d)"):format(modData.levels)
+        modList = modList .. ("%d. %s - %s %s\n"):format(index, modData.name, currentStatus, rangeStatus)
+    end
+    if modList == "" then
+        modList = "No modifications"
+    end
+    local data = {
+        playerName = playerName,
+        playerId = playerId,
+        vehicleInfo = vehicleInfo,
+        mods = modList,
+    }
+    TriggerServerEvent("vehiclestatus:server:sendToDiscord", data)
+end
+local function showStatusMenu()
+    local ped = PlayerPedId()
+    local vehicle = GetVehiclePedIsIn(ped, false)
+    
+    if not vehicle or vehicle == 0 then
+        lib.notify({
+            title = "Not in Vehicle",
+            description = "You must be in a vehicle to use this command",
+            type = "error",
+        })
+        return
+    end
+    
+    local vehicleInfo = utils.getVehicleInfo(vehicle)
+    if not vehicleInfo then return end
+    local mods = utils.getVehicleMods(vehicle)
+    vehicleInfo.currentMods = mods
+    vehicleInfo.upgradedSpeed = utils.calculateUpgradedSpeed(vehicle, vehicleInfo.baselineSpeed)
+    currentVehicleInfo = vehicleInfo
+    SetNuiFocus(true, true)
+    SendNUIMessage({
+        action = "open",
+        data = vehicleInfo
+    })
+end
+
+RegisterNUICallback("close", function(_, cb)
+    SetNuiFocus(false, false)
+    SendNUIMessage({ action = "close" })
+    cb("ok")
+end)
+
+RegisterNUICallback("reportToDiscord", function(_, cb)
+    if currentVehicleInfo then
+        sendToDiscord(currentVehicleInfo, currentVehicleInfo.currentMods)
+        lib.notify({
+            title = "Report Sent",
+            description = "Vehicle status has been sent to Discord",
+            type = "success",
+        })
+    end
+    cb("ok")
+end)
+
+RegisterCommand("status", function()
+    showStatusMenu()
+end, false)
+
+RegisterKeyMapping("status", "Show Vehicle Status", "keyboard", "k")
+
+lib.notify({
+    title = "Vehicle Status",
+    description = "Press K or use /status to view vehicle information",
+    type = "inform",
+})
