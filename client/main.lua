@@ -2,10 +2,12 @@ local utils = require "shared.utils"
 
 ---@type VehicleInfo
 local currentVehicleInfo = nil
+
 ---@param vehicleInfo VehicleInfo
 ---@param mods table
 local function sendToDiscord(vehicleInfo, mods)
     if not vehicleInfo then return end
+
     local player = exports.qbx_core:GetPlayerData()
     local playerName = player.charinfo.firstname .. " " .. player.charinfo.lastname
     local playerId = GetPlayerServerId(PlayerId())
@@ -17,36 +19,43 @@ local function sendToDiscord(vehicleInfo, mods)
         local rangeStatus = ("(Stock - Level %d)"):format(modData.levels)
         modList = modList .. ("%d. %s - %s %s\n"):format(index, modData.name, currentStatus, rangeStatus)
     end
+    
     if modList == "" then
         modList = "No modifications"
     end
+
     local data = {
         playerName = playerName,
         playerId = playerId,
         vehicleInfo = vehicleInfo,
         mods = modList,
     }
+
     TriggerServerEvent("vehiclestatus:server:sendToDiscord", data)
 end
+
 local function showStatusMenu()
     local ped = PlayerPedId()
     local vehicle = GetVehiclePedIsIn(ped, false)
     
     if not vehicle or vehicle == 0 then
-        lib.notify({
+        exports.ox_lib:notify({
             title = "Not in Vehicle",
             description = "You must be in a vehicle to use this command",
             type = "error",
         })
         return
     end
-    
     local vehicleInfo = utils.getVehicleInfo(vehicle)
     if not vehicleInfo then return end
+
     local mods = utils.getVehicleMods(vehicle)
     vehicleInfo.currentMods = mods
+
     vehicleInfo.upgradedSpeed = utils.calculateUpgradedSpeed(vehicle, vehicleInfo.baselineSpeed)
+    
     currentVehicleInfo = vehicleInfo
+
     SetNuiFocus(true, true)
     SendNUIMessage({
         action = "open",
@@ -78,8 +87,13 @@ end, false)
 
 RegisterKeyMapping("status", "Show Vehicle Status", "keyboard", "k")
 
-lib.notify({
-    title = "Vehicle Status",
-    description = "Press K or use /status to view vehicle information",
-    type = "inform",
-})
+CreateThread(function()
+    while not exports.ox_lib do
+        Wait(100)
+    end
+    exports.ox_lib:notify({
+        title = "Vehicle Status",
+        description = "Press K or use /status to view vehicle information",
+        type = "inform",
+    })
+end)

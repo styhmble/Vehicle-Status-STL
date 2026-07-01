@@ -46,6 +46,7 @@ local function toMph(speed)
     local realismFactor = 1.165
     return math.ceil(speed * 2.23694 * realismFactor)
 end
+
 ---@param vehicle number Vehicle handle
 ---@return VehicleInfo?
 local function getVehicleInfo(vehicle)
@@ -87,6 +88,8 @@ end
 local function getVehicleMods(vehicle)
     local mods = {}
     local config = require "config"
+    
+    -- Common mod types to check
     local modTypes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 22, 23}
     
     for _, modType in ipairs(modTypes) do
@@ -100,6 +103,7 @@ local function getVehicleMods(vehicle)
                 levels = numMods,
                 current = currentMod + 1, 
             }
+
             if currentMod == -1 then
                 mods[modType].current = 0
             end
@@ -108,6 +112,7 @@ local function getVehicleMods(vehicle)
     
     return mods
 end
+
 --- @param vehicle number Vehicle handle
 --- @param baselineSpeed number Baseline speed (in mph)
 --- @return number
@@ -115,9 +120,11 @@ local function calculateUpgradedSpeed(vehicle, baselineSpeed)
     local config = require "config"
     local classId = GetVehicleClass(vehicle)
     local classMultiplier = config.classSpeedMultipliers[classId] or 1.20
-    local upgradedSpeed = math.ceil(baselineSpeed * classMultiplier)  
+    local upgradedSpeed = math.ceil(baselineSpeed * classMultiplier)
+    
     return upgradedSpeed
 end
+
 return {
     getVehicleInfo = getVehicleInfo,
     getVehicleMods = getVehicleMods,

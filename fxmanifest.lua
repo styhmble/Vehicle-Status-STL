@@ -2,8 +2,8 @@ fx_version "cerulean"
 game "gta5"
 
 author "Shook"
-description "Standalone UI"
-version "1.1.0"
+description "STL UI Vehicle Stats"
+version "1.2.0"
 
 ui_page "html/ui.html"
 
@@ -23,6 +23,7 @@ client_scripts {
 }
 
 server_scripts {
+    "sv_config.lua",
     "server/main.lua",
 }
 

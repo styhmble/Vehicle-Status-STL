@@ -29,54 +29,63 @@ const populateUI = (data) => {
   document.getElementById("gears").textContent = data.gears;
   document.getElementById("capacity").textContent = data.capacity;
 
-  // Upgrades
+  // Upgrades - dynamically show all available mods
   upgradeList.innerHTML = "";
   
-  const performanceMods = [
-    { type: 11, name: "Engine" },
-    { type: 12, name: "Brakes" },
-    { type: 13, name: "Transmission" },
-    { type: 15, name: "Suspension" },
-    { type: 16, name: "Armor" },
-  ];
+  const modTypeNames = {
+    0: "Spoiler",
+    1: "Front Bumper",
+    2: "Rear Bumper",
+    3: "Side Skirt",
+    4: "Exhaust",
+    5: "Roll Cage",
+    6: "Grille",
+    7: "Hood",
+    8: "Fenders",
+    9: "Roof",
+    10: "Vanity Plates",
+    11: "Engine",
+    12: "Brakes",
+    13: "Transmission",
+    14: "Tires",
+    15: "Suspension",
+    16: "Armor",
+    17: "Xenon Lights",
+    18: "Turbo",
+    22: "Horn",
+    23: "Hydraulics",
+  };
 
-  performanceMods.forEach(mod => {
-    const modData = data.currentMods[mod.type];
-    const li = document.createElement("li");
-    li.className = "flex items-center gap-3 text-slate-300";
-    
-    let statusText = "N/A";
-    if (modData) {
-        const level = modData.current === 0 ? "Stock" : `Level ${modData.current}`;
-        statusText = `${level} (Stock - Level ${modData.levels})`;
-    }
-    
-    li.innerHTML = `
-      <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-      <span class="text-sm font-medium">${mod.name}: <span class="text-white font-semibold">${statusText}</span></span>
-    `;
-    upgradeList.appendChild(li);
-  });
-
-  // Turbo separately
-  const turboData = data.currentMods[18];
-  const turboLi = document.createElement("li");
-  turboLi.className = "flex items-center gap-3 text-slate-300";
-  const hasTurbo = turboData && turboData.current > 0;
+  const hasMods = Object.keys(data.currentMods).length > 0;
   
-  turboLi.innerHTML = `
-    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-    <span class="text-sm font-medium">Turbo: 
-        ${hasTurbo ? '<i class="fa-solid fa-check text-green-400 ml-1"></i> <span class="text-white font-semibold">Installed</span>' : '<i class="fa-solid fa-xmark text-red-400 ml-1"></i> <span class="text-white font-semibold">Stock - Level 1</span>'}
-    </span>
-  `;
-  upgradeList.appendChild(turboLi);
+  if (!hasMods) {
+    upgradeList.innerHTML = '<li class="text-slate-400 text-sm">No upgrades available</li>';
+  } else {
+    Object.entries(data.currentMods).forEach(([type, modData]) => {
+      const li = document.createElement("li");
+      li.className = "flex items-center gap-3 text-slate-300";
+      
+      const modName = modTypeNames[type] || `Mod ${type}`;
+      const level = modData.current === 0 ? "Stock" : `Level ${modData.current}`;
+      const statusText = `${level} (Stock - Level ${modData.levels})`;
+      
+      li.innerHTML = `
+        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+        <span class="text-sm font-medium">${modName}: <span class="text-white font-semibold">${statusText}</span></span>
+      `;
+      upgradeList.appendChild(li);
+    });
+  }
 };
 
 reportBtn.addEventListener("click", () => {
   fetch(`https://${GetParentResourceName()}/reportToDiscord`, {
     method: "POST",
     body: JSON.stringify({}),
+  }).then(() => {
+    if (window.ReportCallback) {
+      window.ReportCallback({ success: true });
+    }
   });
 });
 

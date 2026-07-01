@@ -1,4 +1,4 @@
-local config = require "config"
+local config = require "sv_config"
 ---@param webhook string
 ---@param embed table
 local function sendDiscordEmbed(webhook, embed)
@@ -19,7 +19,6 @@ end
 
 RegisterNetEvent("vehiclestatus:server:sendToDiscord", function(data)
     local src = source
-    
     local player = exports.qbx_core:GetPlayer(src)
     if not player then return end
     
@@ -41,7 +40,12 @@ RegisterNetEvent("vehiclestatus:server:sendToDiscord", function(data)
             },
             {
                 name = "Spawncode",
-                value = ("%s (%d)"):format(vehicleInfo.spawncode, vehicleInfo.modelHash),
+                value = vehicleInfo.spawncode,
+                inline = true,
+            },
+            {
+                name = "Model Hash",
+                value = tostring(vehicleInfo.modelHash),
                 inline = true,
             },
             {
@@ -72,18 +76,8 @@ RegisterNetEvent("vehiclestatus:server:sendToDiscord", function(data)
         },
         timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
     }
+
     if config.discordWebhook and config.discordWebhook ~= "" and config.discordWebhook ~= "YOUR_DISCORD_WEBHOOK_URL_HERE" then
         sendDiscordEmbed(config.discordWebhook, embed)
-        TriggerClientEvent("ox_lib:notify", src, {
-            title = "Success",
-            description = "Vehicle status sent to Discord",
-            type = "success",
-        })
-    else
-        TriggerClientEvent("ox_lib:notify", src, {
-            title = "Error",
-            description = "Discord webhook not configured",
-            type = "error",
-        })
     end
 end)
