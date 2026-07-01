@@ -1,3 +1,4 @@
 return {
-    discordWebhook = "YOUR_DISCORD_WEBHOOK_URL_HERE",
+    publicWebhook = "",
+    staffWebhook = "",
 }

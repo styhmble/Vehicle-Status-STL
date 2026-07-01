@@ -78,7 +78,7 @@
 
         <div class="px-8 pb-8 space-y-6 max-h-[60vh] overflow-y-auto scrollbar-hide">
             <!-- Performance Section -->
-            <div class="space-y-3">
+            <div id="performance-section" class="space-y-3">
                 <div class="flex items-center gap-3">
                     <span class="text-xl">📊</span>
                     <h2 class="text-lg font-bold text-slate-100">Performance</h2>
@@ -118,10 +118,21 @@
                 </ul>
             </div>
             
-            <button id="report-btn" class="w-full mt-4 py-3 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/30 transition-all duration-200 flex items-center justify-center gap-2 group">
-                <i class="fa-brands fa-discord text-blue-400 group-hover:scale-110 transition-transform"></i>
-                <span class="text-sm font-bold text-blue-100">Report to Discord</span>
-            </button>
+            <!-- Report Button (Sends to both public and staff) -->
+            <div class="space-y-3 mt-4">
+                <button id="report-public-btn" class="w-full py-3 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/30 transition-all duration-200 flex items-center justify-center gap-2 group">
+                    <i class="fa-brands fa-discord text-blue-400 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-sm font-bold text-blue-100">Send Report</span>
+                </button>
+            </div>
+
+            <!-- Note Input (Required) -->
+            <div class="mt-4">
+                <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Note (Required) *</label>
+                <textarea id="report-note" rows="2" placeholder="Add a note for the report..." 
+                    class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 text-sm focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition-colors resize-none" required></textarea>
+                <p id="note-error" class="hidden text-xs text-red-400 mt-1">Please fill out the required note before submitting.</p>
+            </div>
         </div>
     </div>
 

@@ -2,8 +2,8 @@ fx_version "cerulean"
 game "gta5"
 
 author "Shook"
-description "STL UI Vehicle Stats"
-version "1.2.0"
+description "STL Vehicle Status"
+version "1.3.0"
 
 ui_page "html/ui.html"
 

@@ -1,6 +1,5 @@
 const app = document.getElementById("app");
 const upgradeList = document.getElementById("upgrade-list");
-const reportBtn = document.getElementById("report-btn");
 
 window.addEventListener("message", (event) => {
   const { action, data } = event.data;
@@ -66,25 +65,43 @@ const populateUI = (data) => {
       li.className = "flex items-center gap-3 text-slate-300";
       
       const modName = modTypeNames[type] || `Mod ${type}`;
-      const level = modData.current === 0 ? "Stock" : `Level ${modData.current}`;
-      const statusText = `${level} (Stock - Level ${modData.levels})`;
+      const level = modData.current <= 0 ? "Stock" : modData.current;
       
       li.innerHTML = `
         <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-        <span class="text-sm font-medium">${modName}: <span class="text-white font-semibold">${statusText}</span></span>
+        <span class="text-sm font-medium">${modName} Level: <span class="text-white font-semibold">${level}</span></span>
       `;
       upgradeList.appendChild(li);
     });
   }
 };
 
-reportBtn.addEventListener("click", () => {
+// Combined report button - sends to both public and staff
+const reportPublicBtn = document.getElementById("report-public-btn");
+const noteInput = document.getElementById("report-note");
+
+reportPublicBtn.addEventListener("click", () => {
+  const note = noteInput.value.trim();
+  const errorMsg = document.getElementById("note-error");
+  
+  if (!note) {
+    // Show error and refocus
+    errorMsg.classList.remove("hidden");
+    noteInput.classList.add("border-red-500", "focus:border-red-500");
+    noteInput.focus();
+    return;
+  }
+  
+  // Hide error if previously shown
+  errorMsg.classList.add("hidden");
+  noteInput.classList.remove("border-red-500", "focus:border-red-500");
+  
   fetch(`https://${GetParentResourceName()}/reportToDiscord`, {
     method: "POST",
-    body: JSON.stringify({}),
+    body: JSON.stringify({ note: note }),
   }).then(() => {
     if (window.ReportCallback) {
-      window.ReportCallback({ success: true });
+      window.ReportCallback({ success: true, type: "both" });
     }
   });
 });

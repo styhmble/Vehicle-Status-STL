@@ -1,7 +1,7 @@
 return {
-
     commandGroup = "builtin.everyone",
-    
+    enableSpeedAnalytics = false,
+
     classSpeedMultipliers = {
         [0] = 1.15,  -- Compacts
         [1] = 1.15,  -- Sedans
@@ -26,7 +26,7 @@ return {
         [20] = 1.15, -- Commercial
         [21] = 1.15, -- Trains
     },
-    
+
     modTypeNames = {
         [0] = "Spoiler",
         [1] = "Front Bumper",
