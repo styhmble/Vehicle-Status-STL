@@ -4,10 +4,14 @@ local config = require "config"
 ---@type VehicleInfo
 local currentVehicleInfo = nil
 
+---@type table
+local currentHandlingInfo = nil
+
 ---@param vehicleInfo VehicleInfo
 ---@param mods table
+---@param handlingInfo table
 ---@param note string
-local function sendToDiscord(vehicleInfo, mods, note)
+local function sendToDiscord(vehicleInfo, mods, handlingInfo, note)
     if not vehicleInfo then return end
 
     local player = exports.qbx_core:GetPlayerData()
@@ -28,6 +32,7 @@ local function sendToDiscord(vehicleInfo, mods, note)
         playerId = playerId,
         vehicleInfo = vehicleInfo,
         mods = modList,
+        handlingInfo = handlingInfo,
         note = note,
     }
 
@@ -53,6 +58,8 @@ local function showStatusMenu()
     local mods = utils.getVehicleMods(vehicle)
     vehicleInfo.currentMods = mods
 
+    currentHandlingInfo = utils.getVehicleHandlingInfo(vehicle)
+
     if config.enableSpeedAnalytics then
         vehicleInfo.upgradedSpeed = utils.calculateUpgradedSpeed(vehicle, vehicleInfo.baselineSpeed)
     else
@@ -76,7 +83,7 @@ end)
 
 RegisterNUICallback("reportToDiscord", function(data, cb)
     local note = data and data.note or ""
-
+    
     if not note or note == "" then
         exports.ox_lib:notify({
             title = "Note Required",
@@ -88,9 +95,9 @@ RegisterNUICallback("reportToDiscord", function(data, cb)
     end
     
     if currentVehicleInfo then
-
-        sendToDiscord(currentVehicleInfo, currentVehicleInfo.currentMods, note)
+        sendToDiscord(currentVehicleInfo, currentVehicleInfo.currentMods, currentHandlingInfo, note)
         
+        -- Show notification after successful send
         exports.ox_lib:notify({
             title = "Reports Sent",
             description = "Vehicle status has been sent to both public and staff channels",

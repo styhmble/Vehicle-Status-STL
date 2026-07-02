@@ -1,6 +1,5 @@
 local svConfig = require "sv_config"
 local config = require "config"
-
 ---@param webhook string
 ---@param embed table
 local function sendDiscordEmbed(webhook, embed)
@@ -24,10 +23,13 @@ RegisterNetEvent("vehiclestatus:server:sendToDiscord", function(data)
 
     local player = exports.qbx_core:GetPlayer(src)
     if not player then return end
+
     local license = GetPlayerIdentifierByType(src, "license")
     local discord = GetPlayerIdentifierByType(src, "discord")
+    
     local vehicleInfo = data.vehicleInfo
     local mods = data.mods
+    local handlingInfo = data.handlingInfo
     local note = data.note or ""
 
     if not note or note == "" then
@@ -130,25 +132,86 @@ RegisterNetEvent("vehiclestatus:server:sendToDiscord", function(data)
         }
     end
 
+    if handlingInfo then
+        staffEmbed.fields[#staffEmbed.fields + 1] = {
+            name = "⚡ Acceleration & Speed",
+            value = string.format(
+                "Accel: %.2f | Max Speed: %.2f\nfInitialDriveForce: %.4f\nfDriveInertia: %.4f\nfInitialDriveMaxFlatVel: %.2f",
+                handlingInfo.acceleration,
+                handlingInfo.maxSpeed,
+                handlingInfo.fInitialDriveForce,
+                handlingInfo.fDriveInertia,
+                handlingInfo.fInitialDriveMaxFlatVel
+            ),
+            inline = false,
+        }
+
+        staffEmbed.fields[#staffEmbed.fields + 1] = {
+            name = "🛑 Brakes & Steering",
+            value = string.format(
+                "fBrakeForce: %.4f\nfBrakeBiasFront: %.4f\nfHandBrakeForce: %.4f\nfSteeringLock: %.2f",
+                handlingInfo.fBrakeForce,
+                handlingInfo.fBrakeBiasFront,
+                handlingInfo.fHandBrakeForce,
+                handlingInfo.fSteeringLock
+            ),
+            inline = false,
+        }
+
+        staffEmbed.fields[#staffEmbed.fields + 1] = {
+            name = "🎯 Traction",
+            value = string.format(
+                "fTractionCurveMax: %.4f\nfTractionCurveMin: %.4f\nfLowSpeedTractionLossMult: %.4f\nfTractionLossMult: %.4f",
+                handlingInfo.fTractionCurveMax,
+                handlingInfo.fTractionCurveMin,
+                handlingInfo.fLowSpeedTractionLossMult,
+                handlingInfo.fTractionLossMult
+            ),
+            inline = false,
+        }
+
+        staffEmbed.fields[#staffEmbed.fields + 1] = {
+            name = "💥 Damage Levels",
+            value = string.format(
+                "fCollisionDamageMult: %.4f\nfWeaponDamageMult: %.4f\nfDeformationDamageMult: %.4f\nfEngineDamageMult: %.4f",
+                handlingInfo.fCollisionDamageMult,
+                handlingInfo.fWeaponDamageMult,
+                handlingInfo.fDeformationDamageMult,
+                handlingInfo.fEngineDamageMult
+            ),
+            inline = false,
+        }
+
+        staffEmbed.fields[#staffEmbed.fields + 1] = {
+            name = "🔧 Suspension",
+            value = string.format(
+                "fRollCentreHeightFront: %.4f\nfRollCentreHeightRear: %.4f\n**Boost: %s**",
+                handlingInfo.fRollCentreHeightFront,
+                handlingInfo.fRollCentreHeightRear,
+                handlingInfo.hasBoost and "true" or "false"
+            ),
+            inline = false,
+        }
+    end
+
     staffEmbed.fields[#staffEmbed.fields + 1] = {
         name = "Note",
         value = note,
         inline = false,
     }
-
+    
     if svConfig.publicWebhook and svConfig.publicWebhook ~= "" and svConfig.publicWebhook ~= "YOUR_DISCORD_WEBHOOK_URL_HERE" then
         sendDiscordEmbed(svConfig.publicWebhook, publicEmbed)
     else
         print("[vehiclestatus] Public Discord webhook not configured. Add URL to sv_config.lua")
     end
-
+    
     if svConfig.staffWebhook and svConfig.staffWebhook ~= "" then
         sendDiscordEmbed(svConfig.staffWebhook, staffEmbed)
     else
         print("[vehiclestatus] Staff Discord webhook not configured. Add URL to sv_config.lua")
     end
 end)
-
 
 RegisterNetEvent("vehiclestatus:server:sendStaffReport", function(data)
 end)
